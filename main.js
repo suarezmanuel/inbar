@@ -6,8 +6,7 @@
 // @author       You
 // @match        https://inbar.biu.ac.il/Live/CreateStudentWeeklySchedule.aspx
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=tampermonkey.net
-// @grant        GM_getResourceURL
-// @resource     overture https://archive.org/details/william-tell-overture_202401
+// @grant        GM_notification
 // ==/UserScript==
 
 (function() {
@@ -23,58 +22,17 @@
     var id_to_index = new Array(target_id.length).fill(0);
     var found = 0;
 
-    function playMusic() {
-        GM.getResourceUrl('overture').then(function(url) {
-            var audio = new Audio(url);
-            audio.volume = 1.0; // Set volume between 0.0 and 1.0
-            audio.play().catch(function(error) {
-                console.error('Error playing audio:', error);
-            });
+    function notifyUser(message) {
+        GM_notification({
+            title: 'Course Availability Alert',
+            text: message,
+            timeout: 0, // Notification stays until dismissed
+            silent: false, // Play system notification sound
+            onclick: function() {
+                window.focus();
+            }
         });
     }
-
-    function playAlarmSound() {
-        // Create an instance of the AudioContext
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const audioCtx = new AudioContext();
-
-        // Create a gain node to control the volume
-        const gainNode = audioCtx.createGain();
-        gainNode.gain.value = 1; // Set volume (1 is max)
-
-        // Create oscillators to generate sound
-        const oscillator1 = audioCtx.createOscillator();
-        const oscillator2 = audioCtx.createOscillator();
-        const oscillator3 = audioCtx.createOscillator();
-
-        // Set oscillator types and frequencies
-        oscillator1.type = 'sawtooth';
-        oscillator1.frequency.setValueAtTime(440, audioCtx.currentTime); // Frequency in Hz
-        oscillator2.type = 'square';
-        oscillator2.frequency.setValueAtTime(880, audioCtx.currentTime);
-        oscillator3.type = 'triangle';
-        oscillator3.frequency.setValueAtTime(1760, audioCtx.currentTime);
-
-        // Connect oscillators to the gain node
-        oscillator1.connect(gainNode);
-        oscillator2.connect(gainNode);
-        oscillator3.connect(gainNode);
-
-        // Connect the gain node to the audio destination (speakers)
-        gainNode.connect(audioCtx.destination);
-
-        // Start the oscillators
-        oscillator1.start();
-        oscillator2.start();
-        oscillator3.start();
-
-        // Stop the oscillators after a set duration (e.g., 5 seconds)
-        const duration = 5; // Duration in seconds
-        oscillator1.stop(audioCtx.currentTime + duration);
-        oscillator2.stop(audioCtx.currentTime + duration);
-        oscillator3.stop(audioCtx.currentTime + duration);
-    }
-
 
     function get_info () {
 
@@ -210,9 +168,8 @@
 
         console.log('hello navi!');
         get_info();
-        found = 0;
         // if the course id was not found in the list
-        if (found == 0) { console.log('enrolled successfully!'); playAlarmSound(); return; }
+        if (found == 0) { console.log('enrolled successfully!'); notifyUser('course is now available!'); return; }
 
         // try all the combinations of (lecture, tirgul)
 
@@ -235,6 +192,8 @@
         localStorage.removeItem('i');
         localStorage.removeItem('j');
 
-    }, 1000);
+        location.reload();
+
+    }, 2000);
 
 })();
