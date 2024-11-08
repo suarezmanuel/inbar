@@ -13,8 +13,8 @@
 
     const rows = Array.from(document.querySelectorAll('#ContentPlaceHolder1_gvLinkToLessons > tbody > tr'));
     // put lectures and tirguls
-    var target_id = ['893311-01', '893311-03','893311-04'];
-    // var target_id = ['895656-01', '895656-02'];
+    //var target_id = ['893311-01', '893311-03','893311-04'];
+    var target_id = ['895656-01', '895656-02'];
     // boolean values based on availability
     var target_val = new Array(target_id.length).fill(0);
     var target_lectures_mask = new Array(target_id.length).fill(0);
@@ -32,6 +32,15 @@
                 window.focus();
             }
         });
+    }
+
+    function inject_script(fn) {
+        var script = document.createElement('script');
+        script.textContent = '(' + fn + ')();';
+        // this will run the script directly
+        (document.head || document.documentElement).appendChild(script);
+        // remove script after it's execution
+        script.parentNode.removeChild(script);
     }
 
     function get_info () {
@@ -108,6 +117,8 @@
 
     function enroll (lecture_index, tirgul_index) {
 
+        notifyUser('course is now available!');
+debugger;
         // lets save the indices because refresh is gonna wipe everything
         localStorage.setItem('i', lecture_index);
         localStorage.setItem('j', tirgul_index);
@@ -115,7 +126,7 @@
         // click on the pen to enroll
         var pen = document.getElementById('ContentPlaceHolder1_gvLinkToLessons_btnLinkStudentToLesson_' + lecture_index);
         // preset the confirmation popup
-        window.confirm = function () { return true; }
+        inject_script(function () { window.confirm = function(){return true;} });
 
         if (pen) {
             localStorage.setItem('enroll_attempted', 'true');
@@ -124,7 +135,6 @@
             localStorage.setItem('enroll_attempted', 'false');
             console.log('pen not found');
         }
-        // MAKE SOUND ON DISCORD
     }
 
     if (localStorage.getItem('quit') === 'true') {
@@ -163,13 +173,14 @@
         return;
     }
 
-    // 1 second per enrollment attempt
+    // 1 second per enrollment attemptdebugger;
     setTimeout(() => {
+
 
         console.log('hello navi!');
         get_info();
         // if the course id was not found in the list
-        if (found == 0) { console.log('enrolled successfully!'); notifyUser('course is now available!'); return; }
+        if (found == 0) { console.log('enrolled successfully!'); notifyUser('course is now available!'); location.reload(); return; }
 
         // try all the combinations of (lecture, tirgul)
 
@@ -178,6 +189,7 @@
             localStorage.setItem('i', '0');
             localStorage.setItem('j', '0');
         }
+
 
         for (let i=localStorage.getItem('i'); i < target_id.length; i++) {
             if (target_lectures_mask[i] === true && target_val[i] === true) {
