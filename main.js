@@ -13,8 +13,8 @@
 
     const rows = Array.from(document.querySelectorAll('#ContentPlaceHolder1_gvLinkToLessons > tbody > tr'));
     // put lectures and tirguls
-    //var target_id = ['893311-01', '893311-03','893311-04'];
-    var target_id = ['895656-01', '895656-02'];
+    var target_id = ['893311-01', '893311-03','893311-04'];
+    //var target_id = ['895656-01', '895656-02'];
     // boolean values based on availability
     var target_val = new Array(target_id.length).fill(0);
     var target_lectures_mask = new Array(target_id.length).fill(0);
@@ -118,7 +118,7 @@
     function enroll (lecture_index, tirgul_index) {
 
         notifyUser('course is now available!');
-debugger;
+
         // lets save the indices because refresh is gonna wipe everything
         localStorage.setItem('i', lecture_index);
         localStorage.setItem('j', tirgul_index);
@@ -135,6 +135,7 @@ debugger;
             localStorage.setItem('enroll_attempted', 'false');
             console.log('pen not found');
         }
+
     }
 
     if (localStorage.getItem('quit') === 'true') {
@@ -146,7 +147,7 @@ debugger;
             localStorage.setItem('quit', 'false');
 
             // preset the confirmation popup
-            window.confirm = function () { return true; }
+            inject_script(function () { window.confirm = function(){return true;} });
 
             // go back to checking availability
             document.getElementById('ContentPlaceHolder1_ucMandatoryAdditionalLessonsSelection_btnCancel').click();
@@ -167,6 +168,11 @@ debugger;
 
         // after this well try to go back a menu
         localStorage.setItem('quit', 'true');
+
+        // preset the confirmation popup
+        inject_script(function () { window.confirm = function(){return true;} });
+window.confirm = function(){return true;}
+        //debugger;
         // click on submit
         document.getElementById('ContentPlaceHolder1_ucMandatoryAdditionalLessonsSelection_btnAssign').click();
 
@@ -180,7 +186,7 @@ debugger;
         console.log('hello navi!');
         get_info();
         // if the course id was not found in the list
-        if (found == 0) { console.log('enrolled successfully!'); notifyUser('course is now available!'); location.reload(); return; }
+        if (found == 0) { console.log('enrolled successfully!'); setInterval(()=>{notifyUser('course is now available!');}, 1000); return; }
 
         // try all the combinations of (lecture, tirgul)
 
@@ -196,6 +202,7 @@ debugger;
                 for (let j=localStorage.getItem('j'); j < target_id.length; j++) {
                     if (target_lectures_mask[j] === false && target_val[j] === true) {
                         enroll(i, j);
+                        return;
                     }
                 }
             }
@@ -204,7 +211,9 @@ debugger;
         localStorage.removeItem('i');
         localStorage.removeItem('j');
 
-        location.reload();
+        //setTimeout(()=>{location.reload();})
+__doPostBack('ctl00$ContentPlaceHolder1$btnSearch', '');
+
 
     }, 2000);
 
